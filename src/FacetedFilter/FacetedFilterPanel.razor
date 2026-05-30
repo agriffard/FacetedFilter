@@ -1,0 +1,227 @@
+@typeparam TItem
+
+@{
+    var filteredItems = FilteredItems;
+}
+
+<div class="faceted-filter-shell">
+    <aside class="faceted-filter-sidebar">
+        <div class="sidebar-header">
+            <h2>@SidebarTitle</h2>
+            @if (HasActiveFilters)
+            {
+                <button type="button" class="clear-button" @onclick="ClearAllAsync">Clear all</button>
+            }
+        </div>
+
+        @if (SearchTextSelector is not null)
+        {
+            <label class="search-box">
+                <span>Search</span>
+                <input value="@_searchText" @oninput="OnSearchChangedAsync" placeholder="@SearchPlaceholder" />
+            </label>
+        }
+
+        @foreach (var facet in Facets)
+        {
+            var options = GetOptions(facet);
+
+            <section class="facet-group">
+                <h3>@facet.Title</h3>
+
+                @foreach (var option in options)
+                {
+                    var count = CountMatches(facet, option.Value);
+                    var isSelected = IsSelected(facet, option.Value);
+
+                    <label class="facet-option @(isSelected ? "selected" : null)">
+                        <input type="checkbox"
+                               checked="@isSelected"
+                               disabled="@(!isSelected && count == 0)"
+                               @onchange="@(_ => ToggleSelectionAsync(facet, option.Value))" />
+                        <span class="facet-label">@option.DisplayLabel</span>
+                        <span class="facet-count">@count</span>
+                    </label>
+                }
+            </section>
+        }
+    </aside>
+
+    <main class="faceted-filter-results">
+        <header class="results-header">
+            <div>
+                <p class="eyebrow">Catalog results</p>
+                <h1>@filteredItems.Count @ResultsLabel</h1>
+            </div>
+        </header>
+
+        @if (HasActiveFilters)
+        {
+            <div class="active-filters" aria-label="Active filters">
+                @if (!string.IsNullOrWhiteSpace(_searchText))
+                {
+                    <button type="button" class="chip" @onclick="ClearSearchAsync">
+                        Search: @_searchText <span aria-hidden="true">×</span>
+                    </button>
+                }
+
+                @foreach (var facet in Facets)
+                {
+                    foreach (var value in GetSelectedValues(facet))
+                    {
+                        <button type="button" class="chip" @onclick="() => RemoveSelectionAsync(facet, value)">
+                            @facet.Title: @GetOptionLabel(facet, value) <span aria-hidden="true">×</span>
+                        </button>
+                    }
+                }
+            </div>
+        }
+
+        @if (filteredItems.Count == 0)
+        {
+            if (EmptyContent is not null)
+            {
+                @EmptyContent
+            }
+            else
+            {
+                <div class="empty-state">
+                    <p>No results match the current filters.</p>
+                </div>
+            }
+        }
+        else if (ItemTemplate is not null)
+        {
+            <div class="results-grid">
+                @foreach (var item in filteredItems)
+                {
+                    @ItemTemplate(item)
+                }
+            </div>
+        }
+    </main>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public IReadOnlyList<TItem> Items { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<FacetDefinition<TItem>> Facets { get; set; } = [];
+
+    [Parameter, EditorRequired]
+    public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment? EmptyContent { get; set; }
+
+    [Parameter]
+    public Func<TItem, string?>? SearchTextSelector { get; set; }
+
+    [Parameter]
+    public string SidebarTitle { get; set; } = "Filters";
+
+    [Parameter]
+    public string ResultsLabel { get; set; } = "results";
+
+    [Parameter]
+    public string SearchPlaceholder { get; set; } = "Search products";
+
+    [Parameter]
+    public EventCallback<IReadOnlyList<TItem>> FilteredItemsChanged { get; set; }
+
+    private readonly Dictionary<string, List<string>> _selectedValues = new(StringComparer.OrdinalIgnoreCase);
+    private string _searchText = string.Empty;
+
+    private IReadOnlyList<TItem> FilteredItems => FacetedFilterEngine.FilterItems(Items, Facets, _selectedValues, _searchText, SearchTextSelector);
+
+    private bool HasActiveFilters => !string.IsNullOrWhiteSpace(_searchText) || _selectedValues.Values.Any(values => values.Count > 0);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await NotifyFilteredItemsChangedAsync();
+    }
+
+    private IReadOnlyList<FacetOption> GetOptions(FacetDefinition<TItem> facet)
+        => FacetedFilterEngine.GetOptions(facet, Items, _selectedValues);
+
+    private int CountMatches(FacetDefinition<TItem> facet, string optionValue)
+        => FacetedFilterEngine.CountMatches(Items, Facets, _selectedValues, _searchText, SearchTextSelector, facet, optionValue);
+
+    private bool IsSelected(FacetDefinition<TItem> facet, string value)
+        => _selectedValues.TryGetValue(facet.Key, out var selected)
+            && selected.Any(selectedValue => facet.Comparer.Equals(selectedValue, value));
+
+    private IReadOnlyList<string> GetSelectedValues(FacetDefinition<TItem> facet)
+        => _selectedValues.TryGetValue(facet.Key, out var selected) ? selected : [];
+
+    private string GetOptionLabel(FacetDefinition<TItem> facet, string value)
+        => GetOptions(facet).FirstOrDefault(option => facet.Comparer.Equals(option.Value, value))?.DisplayLabel ?? value;
+
+    private async Task OnSearchChangedAsync(ChangeEventArgs args)
+    {
+        _searchText = args.Value?.ToString() ?? string.Empty;
+        await NotifyFilteredItemsChangedAsync();
+    }
+
+    private async Task ToggleSelectionAsync(FacetDefinition<TItem> facet, string value)
+    {
+        if (!_selectedValues.TryGetValue(facet.Key, out var selected))
+        {
+            selected = [];
+            _selectedValues[facet.Key] = selected;
+        }
+
+        var existingIndex = selected.FindIndex(selectedValue => facet.Comparer.Equals(selectedValue, value));
+        if (existingIndex >= 0)
+        {
+            selected.RemoveAt(existingIndex);
+        }
+        else
+        {
+            selected.Add(value);
+        }
+
+        if (selected.Count == 0)
+        {
+            _selectedValues.Remove(facet.Key);
+        }
+
+        await NotifyFilteredItemsChangedAsync();
+    }
+
+    private async Task RemoveSelectionAsync(FacetDefinition<TItem> facet, string value)
+    {
+        if (_selectedValues.TryGetValue(facet.Key, out var selected))
+        {
+            selected.RemoveAll(selectedValue => facet.Comparer.Equals(selectedValue, value));
+            if (selected.Count == 0)
+            {
+                _selectedValues.Remove(facet.Key);
+            }
+
+            await NotifyFilteredItemsChangedAsync();
+        }
+    }
+
+    private async Task ClearSearchAsync()
+    {
+        _searchText = string.Empty;
+        await NotifyFilteredItemsChangedAsync();
+    }
+
+    private async Task ClearAllAsync()
+    {
+        _searchText = string.Empty;
+        _selectedValues.Clear();
+        await NotifyFilteredItemsChangedAsync();
+    }
+
+    private async Task NotifyFilteredItemsChangedAsync()
+    {
+        if (FilteredItemsChanged.HasDelegate)
+        {
+            await FilteredItemsChanged.InvokeAsync(FilteredItems);
+        }
+    }
+}

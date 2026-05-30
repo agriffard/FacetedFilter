@@ -1,0 +1,134 @@
+.faceted-filter-shell {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
+    align-items: start;
+}
+
+.faceted-filter-sidebar {
+    background: #fff;
+    border: 1px solid #dbe4f0;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    position: sticky;
+    top: 1rem;
+}
+
+.sidebar-header,
+.results-header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.sidebar-header h2,
+.results-header h1,
+.facet-group h3 {
+    margin: 0;
+}
+
+.search-box {
+    display: grid;
+    gap: 0.5rem;
+    margin: 1rem 0 1.25rem;
+}
+
+.search-box span,
+.eyebrow {
+    color: #5b6b83;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.search-box input {
+    border: 1px solid #c9d4e5;
+    border-radius: 0.75rem;
+    font: inherit;
+    padding: 0.75rem 0.9rem;
+}
+
+.facet-group + .facet-group {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e4ebf5;
+}
+
+.facet-option {
+    align-items: center;
+    cursor: pointer;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    padding: 0.35rem 0;
+}
+
+.facet-option.selected .facet-label {
+    font-weight: 600;
+}
+
+.facet-option input {
+    margin: 0;
+}
+
+.facet-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.facet-count {
+    background: #edf3fb;
+    border-radius: 999px;
+    color: #1d4a8c;
+    font-size: 0.85rem;
+    min-width: 2rem;
+    padding: 0.15rem 0.55rem;
+    text-align: center;
+}
+
+.clear-button,
+.chip {
+    background: #eff5ff;
+    border: 0;
+    border-radius: 999px;
+    color: #17407d;
+    cursor: pointer;
+    font: inherit;
+    padding: 0.45rem 0.8rem;
+}
+
+.active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 1rem 0 1.25rem;
+}
+
+.results-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.empty-state {
+    background: #fff;
+    border: 1px dashed #c9d4e5;
+    border-radius: 1rem;
+    color: #5b6b83;
+    padding: 2rem;
+    text-align: center;
+}
+
+@media (max-width: 960px) {
+    .faceted-filter-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .faceted-filter-sidebar {
+        position: static;
+    }
+}

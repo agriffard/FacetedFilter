@@ -1,0 +1,53 @@
+name: pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Publish demo app
+        run: dotnet publish samples/FacetedFilter.Demo/FacetedFilter.Demo.csproj --configuration Release -o artifacts/pages
+
+      - name: Adjust base path
+        shell: bash
+        run: |
+          REPOSITORY_NAME="${GITHUB_REPOSITORY#*/}"
+          sed -i 's|<base href="/" />|<base href="/'"${REPOSITORY_NAME}"'/" />|' artifacts/pages/wwwroot/index.html
+          cp artifacts/pages/wwwroot/index.html artifacts/pages/wwwroot/404.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: artifacts/pages/wwwroot
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
