@@ -1,0 +1,161 @@
+:root {
+    color-scheme: light;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f4f7fb;
+    color: #1f2a3d;
+}
+
+body {
+    margin: 0;
+    background: linear-gradient(180deg, #f6f8fc 0%, #eef3fb 100%);
+}
+
+main {
+    display: block;
+}
+
+.page-shell {
+    margin: 0 auto;
+    max-width: 1200px;
+    padding: 2rem 1.25rem 3rem;
+}
+
+.page-header {
+    margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+    margin: 0.25rem 0 0.75rem;
+}
+
+.page-header p,
+.intro-card p {
+    color: #5b6b83;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.page-kicker {
+    color: #17407d;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.intro-card,
+.product-card {
+    background: #fff;
+    border: 1px solid #dbe4f0;
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(15, 35, 70, 0.04);
+}
+
+.intro-card {
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem;
+}
+
+.product-card {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.2rem;
+}
+
+.product-card h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.product-card p,
+.product-card dd,
+.product-card dt {
+    margin: 0;
+}
+
+.product-meta {
+    color: #5b6b83;
+    font-size: 0.9rem;
+}
+
+.product-card dl {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.product-card dt {
+    color: #5b6b83;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.product-card dd {
+    font-weight: 600;
+}
+
+.empty-card {
+    text-align: center;
+}
+
+#blazor-error-ui {
+    color-scheme: light only;
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+.loading-progress {
+    position: absolute;
+    display: block;
+    width: 8rem;
+    height: 8rem;
+    inset: 20vh 0 auto 0;
+    margin: 0 auto;
+}
+
+.loading-progress circle {
+    fill: none;
+    stroke: #e0e0e0;
+    stroke-width: 0.6rem;
+    transform-origin: 50% 50%;
+    transform: rotate(-90deg);
+}
+
+.loading-progress circle:last-child {
+    stroke: #17407d;
+    stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+    transition: stroke-dasharray 0.05s ease-in-out;
+}
+
+.loading-progress-text {
+    position: absolute;
+    text-align: center;
+    font-weight: bold;
+    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+}
+
+.loading-progress-text:after {
+    content: var(--blazor-load-percentage-text, "Loading");
+}
+
+@media (max-width: 720px) {
+    .product-card dl {
+        grid-template-columns: 1fr;
+    }
+}

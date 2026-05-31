@@ -1,0 +1,106 @@
+@page "/"
+
+<PageTitle>FacetedFilter demo</PageTitle>
+
+<section class="intro-card">
+    <p>This sample app exercises the package with a small product catalog. Try searching, selecting multiple brands or colors, and removing filters from the active chips.</p>
+</section>
+
+<FacetedFilterPanel TItem="Product"
+                    Items="Products"
+                    Facets="Facets"
+                    SearchTextSelector="SearchText"
+                    ResultsLabel="matching products">
+    <ItemTemplate Context="product">
+        <article class="product-card">
+            <div class="product-meta">@product.Category • @product.Brand</div>
+            <h2>@product.Name</h2>
+            <p>@product.Description</p>
+            <dl>
+                <div>
+                    <dt>Color</dt>
+                    <dd>@product.Color</dd>
+                </div>
+                <div>
+                    <dt>Price</dt>
+                    <dd>@product.PriceBand</dd>
+                </div>
+                <div>
+                    <dt>Shipping</dt>
+                    <dd>@product.ShippingSpeed</dd>
+                </div>
+            </dl>
+        </article>
+    </ItemTemplate>
+    <EmptyContent>
+        <div class="product-card empty-card">
+            <h2>No products found</h2>
+            <p>Clear a filter or widen the search to see products again.</p>
+        </div>
+    </EmptyContent>
+</FacetedFilterPanel>
+
+@code {
+
+    private static string SearchText(Product product)
+        => $"{product.Name} {product.Description} {product.Brand} {product.Category}";
+
+    private static readonly IReadOnlyList<Product> Products =
+    [
+        new("Trail Shell Jacket", "Apparel", "Northwind", "Blue", "$$$", "Next day", "Lightweight waterproof shell for all-weather hikes."),
+        new("City Commuter Backpack", "Bags", "Northwind", "Black", "$$", "Two days", "Laptop-ready commuter pack with reflective trim."),
+        new("Summit Daypack", "Bags", "Terra", "Green", "$", "Next day", "Compact hiking backpack with hydration sleeve."),
+        new("Alpine Base Layer", "Apparel", "Terra", "Gray", "$", "Two days", "Breathable merino blend for cold starts."),
+        new("Mesa Trail Shoes", "Footwear", "Waypoint", "Brown", "$$$", "Two days", "Cushioned grip for mixed terrain runs."),
+        new("Harbor Slip-ons", "Footwear", "Waypoint", "White", "$$", "Standard", "Everyday canvas shoes with a flexible sole."),
+        new("Campfire Mug", "Accessories", "Northwind", "Orange", "$", "Standard", "Double-wall steel mug for hot drinks outside."),
+        new("Lantern Mini", "Accessories", "GlowCo", "Yellow", "$$", "Next day", "Rechargeable lantern with warm and cool modes."),
+        new("Ridge Trek Poles", "Accessories", "Terra", "Black", "$$", "Two days", "Collapsible poles for long ascents and descents."),
+        new("Coast Windbreaker", "Apparel", "GlowCo", "Red", "$$", "Standard", "Packable layer for breezy city walks."),
+        new("Pebble Sandals", "Footwear", "GlowCo", "Tan", "$", "Standard", "Quick-dry sandals for warm-weather travel."),
+        new("Transit Organizer", "Bags", "Waypoint", "Navy", "$", "Next day", "Travel pouch set for chargers and documents.")
+    ];
+
+    private static readonly IReadOnlyList<FacetDefinition<Product>> Facets =
+    [
+        new()
+        {
+            Key = "category",
+            Title = "Category",
+            Values = product => [product.Category]
+        },
+        new()
+        {
+            Key = "brand",
+            Title = "Brand",
+            Values = product => [product.Brand]
+        },
+        new()
+        {
+            Key = "color",
+            Title = "Color",
+            Values = product => [product.Color]
+        },
+        new()
+        {
+            Key = "price",
+            Title = "Price band",
+            Values = product => [product.PriceBand]
+        },
+        new()
+        {
+            Key = "shipping",
+            Title = "Shipping",
+            Values = product => [product.ShippingSpeed]
+        }
+    ];
+
+    private sealed record Product(
+        string Name,
+        string Category,
+        string Brand,
+        string Color,
+        string PriceBand,
+        string ShippingSpeed,
+        string Description);
+}
